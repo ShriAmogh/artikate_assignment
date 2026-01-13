@@ -1,0 +1,6 @@
+fitz
+google-genai
+sentence-transformers
+langchain
+chromadb
+langchain-text-splitters

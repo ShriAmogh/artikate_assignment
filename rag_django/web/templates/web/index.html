@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Knowledge Assistant</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            background: #f7f9fc;
+        }
+
+        .left, .right {
+            padding: 20px;
+        }
+
+        .left {
+            width: 30%;
+            border-right: 1px solid #ddd;
+            background: #ffffff;
+        }
+
+        .right {
+            width: 70%;
+        }
+
+        h3 {
+            margin-top: 0;
+        }
+
+        button {
+            padding: 8px 14px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        input[type="file"],
+        input[type="text"] {
+            padding: 6px;
+            margin-top: 10px;
+        }
+
+        .loader {
+            margin-top: 15px;
+            padding: 10px;
+            background: #eef2ff;
+            border-left: 4px solid #4f46e5;
+            display: none;
+        }
+
+        .answer-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffffff;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left">
+    <h3>📄 Upload PDFs</h3>
+
+    <form method="post" enctype="multipart/form-data" onsubmit="startIndexing()">
+        {% csrf_token %}
+        <input type="file" name="files" multiple />
+        <br><br>
+        <button type="submit" id="uploadBtn">Upload & Index</button>
+    </form>
+
+    <!-- Indexing Loader -->
+    <div class="loader" id="loader">
+        🔄 Indexing documents...  
+        <br>
+        Please don’t refresh the page.
+    </div>
+
+    {% if job_id %}
+        <input type="hidden" id="jobId" value="{{ job_id }}">
+    {% endif %}
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right">
+    <h3>💬 Ask Question</h3>
+
+    <form action="/ask/" method="post">
+        {% csrf_token %}
+        <input type="text" name="question" style="width:80%" placeholder="Ask something from the indexed PDFs..." />
+        <button type="submit">Ask</button>
+    </form>
+
+    {% if answer %}
+        <div class="answer-box">
+            <h4>✅ Answer</h4>
+            <p>{{ answer }}</p>
+
+            <h5>📌 Sources</h5>
+            <ul>
+                {% for s in sources %}
+                    <li>{{ s }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function startIndexing() {
+        document.getElementById("loader").style.display = "block";
+        document.getElementById("uploadBtn").disabled = true;
+    }
+</script>
+
+</body>
+</html>

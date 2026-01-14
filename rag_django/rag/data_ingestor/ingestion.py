@@ -26,7 +26,7 @@ class FolderPDFIngestor:
 
         self.client = PersistentClient(path=chroma_dir)
         self.collection = self.client.get_or_create_collection(
-            name=collection_name,
+            name= collection_name,
             metadata={"hnsw:space": "cosine"}
         )
 

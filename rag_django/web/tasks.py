@@ -3,7 +3,7 @@ from .models import IngestionJob
 from rag.data_ingestor.ingestion import FolderPDFIngestor
 
 @shared_task(bind=True)
-def ingest_folder_task(self, folder_path: str, job_id: int):
+def ingest_folder_task(self, folder_path: str, job_id: int, doc_id : str):
     job = IngestionJob.objects.get(id=job_id)
     job.status = "running"
     job.progress = 0
@@ -13,7 +13,7 @@ def ingest_folder_task(self, folder_path: str, job_id: int):
         ingestor = FolderPDFIngestor(
             folder_path=folder_path,
             chroma_dir="vector_store/",
-            collection_name="user_uploaded_docs"
+            collection_name= doc_id
         )
 
         total_steps = 100

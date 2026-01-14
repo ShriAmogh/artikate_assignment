@@ -1,10 +1,9 @@
 from django.shortcuts import render
-
-from django.shortcuts import render
 from django.core.files.storage import FileSystemStorage
 from .tasks import ingest_folder_task
 from rag.services import ask_rag
 from .models import IngestionJob
+import uuid
 
 def index(request):
     if request.method == "POST":
@@ -16,7 +15,11 @@ def index(request):
         for f in files:
             fs.save(f.name, f)
 
-        # ✅ create ingestion job
+        doc_id = str(uuid.uuid4())
+
+        request.session['doc_id'] = doc_id
+        print(f"doc_id set in session: {doc_id}")
+
         job = IngestionJob.objects.create(
             status="pending",
             progress=0
@@ -31,7 +34,8 @@ def index(request):
         #currently sync task
         ingest_folder_task(
             folder_path=upload_dir,
-            job_id=job.id
+            job_id=job.id,
+            doc_id = doc_id
         )
 
 
@@ -51,8 +55,10 @@ def ask(request):
 
     if request.method == "POST":
         question = request.POST.get("question")
-        response = ask_rag(question)
-
+        doc_id = request.session.get('doc_id')
+        print(f"checking doc id here   {doc_id}")
+        print(f"doc_id retrieved from session: {doc_id}")
+        response = ask_rag(question, doc_id)
         answer = response["answer"]
         sources = response["sources"]
 

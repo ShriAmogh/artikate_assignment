@@ -4,3 +4,4 @@ __pycache__/
 .venv/
 vector_store/
 data/*
+rag_django/media/*

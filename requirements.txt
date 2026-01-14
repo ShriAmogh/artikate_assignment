@@ -4,3 +4,8 @@ sentence-transformers
 langchain
 chromadb
 langchain-text-splitters
+django
+celery
+redis
+pymupdf
+python-dotenv

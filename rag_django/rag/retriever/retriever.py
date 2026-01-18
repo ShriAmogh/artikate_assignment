@@ -66,7 +66,8 @@ class ChromaRetriever:
                 "metadata": meta,
                 "vector_score": float(dist)
             })
-
+        # print(formatted)
+        # print()
         return formatted
 
     def _rerank_with_cross_encoder(
@@ -94,5 +95,7 @@ class ChromaRetriever:
             key=lambda x: x["cross_score"],
             reverse=True
         )
-
+        # for doc in documents:
+        #     print(doc)
+        #     print()
         return documents[:top_k]

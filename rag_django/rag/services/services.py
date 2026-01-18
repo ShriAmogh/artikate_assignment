@@ -1,5 +1,6 @@
 from rag.retriever.retriever import ChromaRetriever
 from rag.ans_builder.beautify_answer import AnswerBeautifier
+import os
 
 beautifier = AnswerBeautifier()
 
@@ -12,7 +13,7 @@ def ask_rag(question: str, doc_id: str):
         }
     
     retriever = ChromaRetriever(
-        chroma_dir="vector_store/",
+        chroma_dir= os.path.join("vector_store", doc_id),
         collection_name=doc_id
     )
     
@@ -28,12 +29,12 @@ def ask_rag(question: str, doc_id: str):
             "sources": []
         }
     #to view all results
-    for result in results:
-        print(f"\n Retrieved doc : {result['content'][:200]}")
+    # for result in results:
+    #     print(f"\n Retrieved doc : {result['content'][:200]}")
 
     beautified_answer = beautifier.generate_answer(
         question=question,
         top_documents=results
     )
-    print(f"\n beautified_answer : {beautified_answer}\n")
+    # print(f"\n beautified_answer : {beautified_answer}\n")
     return beautified_answer

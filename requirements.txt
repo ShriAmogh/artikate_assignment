@@ -9,3 +9,6 @@ celery
 redis
 pymupdf
 python-dotenv
+psycopg2-binary
+djangorestframework 
+djangorestframework-simplejwt

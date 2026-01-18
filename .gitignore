@@ -6,3 +6,4 @@ vector_store/
 data/*
 rag_django/media/*
 db.sqlite3
+ss/*

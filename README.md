@@ -4,35 +4,35 @@ A Retrieval-Augmented Generation (RAG) application built using Django, ChromaDB,
 
 
 Application Flow (End-to-End)
-    1. Upload PDFs
-
-  User uploads PDFs via Django UI
-
-  Files stored in media/uploads/
-
-2. Indexing Pipeline
-  PDF → Text → Chunks → Embeddings → ChromaDB
+1. "/login/" --> routes to the login page (if user exist in local storage )
+2. "/signup/" --> to create the user and store the auth in local storage (using django User model)
+3. "/dashboard/" --> main page where user uploads documents and gets saved according to the user id (collection name) in the vector storage.
+   PDF → Text → Chunks → Embeddings → ChromaDB
+4. "/ask/" --> to ask the question according to the document (currently using vector search and re-ranking method)
+   
 
 
 Steps:
-
-  PDFs parsed using PyMuPDF
+-User name and hashed password are stored in the Postgressql. 
+    
+-login checks for the username (username is unique, easy to read )
+    
+ -PDFs parsed using PyMuPDF
   
-  Text chunked using RecursiveCharacterTextSplitter
+  -Text chunked using RecursiveCharacterTextSplitter
   
-  Embeddings generated in safe batches
+  -Embeddings generated in safe batches and gets saves separately, no two user documents get merged.  
   
-  Stored in ChromaDB with metadata:
+  -Stored in ChromaDB with metadata:
 
     document name
     
     page number
     
     chunk index
-    
-    Indexing is append-only — new documents extend the same collection.
 
-3. Retrieval Pipeline
+
+**Retrieval Pipeline**
   Question → Embedding → Vector Search → Reranking
 
 
@@ -42,7 +42,7 @@ Steps:
 
   Highest confidence chunks selected
 
-4. Answer Beautification
+**Answer Beautification**
 
   Retrieved chunks passed to Gemini
 
@@ -56,7 +56,7 @@ Steps:
 
   Outputs structured answer + sources
 
-5. Final Output
+**Final Output**
 
   User sees:
   
@@ -64,51 +64,26 @@ Steps:
   
   📌 Source Document + Page Number
 
-Authentication & Persistence (Future Scope)
-
-  Planned enhancements:
-  
-    Django authentication
-    
-    One Chroma collection per user
-    
-    Documents persist across sessions
-    
-    Incremental uploads without re-indexing
-
-To use Async Indexing with Celery 
-
-The architecture supports async indexing using:
-
-  Celery for background jobs
-  
-  Redis as broker
-  
-  USe : ingest_folder_task.delay(upload_dir, user_id)
-
-
-Currently disabled for simplicity.
-Enabling it requires only deployment-level changes.
 
 
 
 First Install the dependencies
 
-  pip install -r requirements.txt
+      pip install -r requirements.txt
 
 Create a .env file:
 
-  GOOGLE_API_KEY=your_google_gemini_api_key
+      GOOGLE_API_KEY=your_google_gemini_api_key
 
 To run this : 
 
-git clone https://github.com/ShriAmogh/artikate_assignment.git
+    git clone https://github.com/ShriAmogh/artikate_assignment.git
 
-cd rag_django
+    cd rag_django
 
-python manage.py migrate
+    python manage.py migrate
 
-python .\manage.py runserver
+    python .\manage.py runserver
 
 Open: http://127.0.0.1:8000
 

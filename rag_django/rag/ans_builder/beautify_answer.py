@@ -87,7 +87,7 @@ class AnswerBeautifier:
                 seen.add(key)
                 sources.append(f"{source} - Page {page}")
 
-        return sources
+        return sources[0:1]
 
 
     def _build_prompt(self, question: str, context: str) -> str:

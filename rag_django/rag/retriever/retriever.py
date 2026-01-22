@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.cross_encoder import CrossEncoder
 from chromadb import PersistentClient
@@ -16,7 +16,6 @@ class ChromaRetriever:
         self.embedding_model = SentenceTransformer(embedding_model_name)
 
         self.client = PersistentClient(path=chroma_dir)
-        #self.collection = self.client.get_collection(name=collection_name)
         self.collection = self.client.get_or_create_collection(
             name=collection_name,
             metadata={"hnsw:space": "cosine"}
@@ -28,7 +27,8 @@ class ChromaRetriever:
         self,
         query: str,
         top_k: int = 5,
-        fetch_k: int = 20
+        fetch_k: int = 20,
+        content_type: Optional[str] = None  
     ) -> List[Dict]:
 
         query_embedding = self.embedding_model.encode(
@@ -36,10 +36,13 @@ class ChromaRetriever:
             normalize_embeddings=True
         ).tolist()
 
+        where_filter = {"type": content_type} if content_type else None
+
         results = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=fetch_k,
-            include=["documents", "metadatas", "distances"]
+            include=["documents", "metadatas", "distances"],
+            where=where_filter
         )
 
         retrieved = self._format_results(results)
@@ -52,6 +55,34 @@ class ChromaRetriever:
 
         return reranked
 
+    def get_tables(
+        self,
+        query: str,
+        top_k: int = 3
+    ) -> List[Dict]:
+        """
+        Retrieve only tables for a query.
+        Returns list with 'markdown' field containing the actual table.
+        """
+        results = self.retrieve(
+            query=query,
+            top_k=top_k,
+            fetch_k=20,
+            content_type="table"
+        )
+
+        tables = []
+        for result in results:
+            if "table_markdown" in result["metadata"]:
+                tables.append({
+                    "markdown": result["metadata"]["table_markdown"],
+                    "source": result["metadata"].get("source", "Unknown"),
+                    "page": result["metadata"].get("page", "Unknown"),
+                    "score": result.get("cross_score", 0),
+                    "content": result["content"]  # searchable text
+                })
+        
+        return tables
 
     def _format_results(self, results) -> List[Dict]:
         documents = results["documents"][0]
@@ -66,8 +97,7 @@ class ChromaRetriever:
                 "metadata": meta,
                 "vector_score": float(dist)
             })
-        # print(formatted)
-        # print()
+
         return formatted
 
     def _rerank_with_cross_encoder(
@@ -76,7 +106,6 @@ class ChromaRetriever:
         documents: List[Dict],
         top_k: int
     ) -> List[Dict]:
-
 
         if not documents:
             return []
@@ -95,7 +124,5 @@ class ChromaRetriever:
             key=lambda x: x["cross_score"],
             reverse=True
         )
-        # for doc in documents:
-        #     print(doc)
-        #     print()
+
         return documents[:top_k]

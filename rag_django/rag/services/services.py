@@ -16,12 +16,19 @@ def ask_rag(question: str, doc_id: str):
         chroma_dir= os.path.join("vector_store", doc_id),
         collection_name=doc_id
     )
-    
-    results = retriever.retrieve(
-        query=question,
-        fetch_k=20,
-        top_k=5
-    )
+    for_table = ["table", "tables"]
+    for word in for_table:
+        if word in question.lower():
+            results = retriever.get_tables(
+                query= question
+            )
+    else:
+        results = retriever.retrieve(
+            query=question,
+            fetch_k=20,
+            top_k=5, 
+            content_type="text"
+        )
 
     if not results:
         return {

@@ -23,7 +23,7 @@ def ingest_folder_task(self, folder_path: str, job_id: int, doc_id: str):
         )
 
         current = 0
-        for step_progress in ingestor.ingest_with_progress():
+        for step_progress in ingestor.ingest_with_progress( username= doc_id, job= job_id):
             current = step_progress
             job.progress = current
             job.save(update_fields=["progress"])
